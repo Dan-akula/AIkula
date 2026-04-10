@@ -1,8 +1,10 @@
-{
-    "create":{
+
+[
+    {
+        "command":"create",
         "caption":"create file",
         "body":"echo \"{content}\" > \"./files/{relative_location}\"",
         "params":["relative_location","content"],
         "type":"shell"
     }
-}
+]

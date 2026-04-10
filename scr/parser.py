@@ -1,9 +1,13 @@
 import json
 import subprocess
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 # Constants defining the command encapsulation markers and split character
-START_TOKEN = "<@#"
-END_TOKEN = "#@>"
-SPLIT_TOKEN = "|"
+START_TOKEN = os.getenv("START_TOKEN")
+END_TOKEN = os.getenv("END_TOKEN")
+SPLIT_TOKEN = os.getenv("SPLIT_TOKEN")
 
 # Directory where skill definition JSON files are stored
 SKILLS_DIR = "./skills"
@@ -77,7 +81,9 @@ def cmd_mapper(cmd: dict) -> str:
         data = json.load(raw_file)
 
     # Obtain the body template for the specific command
-    current_cmd = data[cmd["cmd_name"]]
+    for command in data:
+        if cmd["cmd_name"] == command["command"]:
+            current_cmd = command
     body = current_cmd["body"]
 
     # Replace every occurrence of {param_name} with the corresponding value
