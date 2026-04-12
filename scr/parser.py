@@ -100,8 +100,7 @@ def cmd_mapper(cmd: dict) -> str:
 
 
 def executer(cmd: str):
-    subprocess.run(cmd, shell=True, capture_output=True, text=True)
-
+    return subprocess.run(cmd, shell=True, capture_output=True, text=True)
 
 # Example usage when the script is executed directly
 if __name__ == "__main__":

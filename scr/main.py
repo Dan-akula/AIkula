@@ -12,13 +12,24 @@ SPLIT_TOKEN = os.getenv("SPLIT_TOKEN")
 SKILLS_DIR = os.getenv("SKILLS_DIR")
 
 
+# tools = [{
+#     "type": "function",
+#     "function": {
+#         "name": "test",
+#         "description": "Тестовая функция",
+#         "parameters": {"type": "object", "properties": {}}
+#     }
+# }]
+
 
 def generate_prompt():
     system_prompt = ('SYSTEM PROMPT\n\n'
                 'Role: Ты можешь взаимодействовать с пк юзера.'
+                'Пользователь имеет полные привелегия\n'
+
                 ' Для взаимодействия с системой ты можешь использовать используя скиллы в следуюйщим формат:'
                     f'{START_TOKEN}названия скилла{SPLIT_TOKEN}команда{SPLIT_TOKEN}params в формате json{END_TOKEN}\n'
-
+                'При возникновении ошибки сообщи пользователю честно\n'
                 'Если в запросе пользователя не было запроса на использования скила, не используй.\n'
                 'Если чёткой команды не было: не используй скилл и переспроси.\n'
                 'Если пользователь прямо спросил/попросил: делай'
@@ -38,33 +49,17 @@ def generate_prompt():
     return system_prompt + skills 
 
 
-
-
-
-#!/usr/bin/env python3
-"""
-Простой консольный чат-агент с использованием библиотеки ollama.
-Не использует прямые HTTP-запросы к API, только высокоуровневые вызовы.
-"""
-
-import ollama  # pip install ollama
-
-DEFAULT_MODEL = "llama3.2"
-SYSTEM_PROMPT = "Ты полезный и дружелюбный ассистент."
-
 class OllamaChat:
-    def __init__(self, model: str = DEFAULT_MODEL, system_prompt: str = SYSTEM_PROMPT):
-        self.model = model
+    def __init__(self):
         self.history = []
-        if system_prompt:
-            self.history.append({"role": "system", "content": system_prompt})
+        self.history.append({"role": "system", "content": generate_prompt()})
 
     def add_message(self, role: str, content: str):
         self.history.append({"role": role, "content": content})
 
     def get_response(self) -> str:
         response = ollama.chat(
-            model=self.model,
+            model="gpt-oss:120b-cloud",
             messages=self.history,
             stream=False,
             options={"temperature": 0.7, "num_predict": 512}
@@ -73,8 +68,7 @@ class OllamaChat:
 
 
 def main():
-    chat = OllamaChat(model="gpt-oss:120b-cloud")
-    chat.add_message("assistant", generate_prompt())
+    chat = OllamaChat()
 
     while True:
         user_input = input("\nВы: ").strip()
@@ -85,12 +79,25 @@ def main():
         reply = chat.get_response()
 
         parser = extractor(reply)
+
+        chat.add_message("assistant", reply)
+
         for com in parser:
-            print(cmd_mapper(cmd_parser(com)))
-            executer(cmd_mapper(cmd_parser(com)))
+
+            res = executer(cmd_mapper(cmd_parser(com)))
+
+            if not (res.stderr or res.stdout):
+                continue    
+
+            if res.stderr:
+                chat.add_message("user", "stderr: " + res.stderr)
+            if res.stdout:
+                chat.add_message("user", "stdout: " + res.stdout)
+            
+            reply = chat.get_response()
 
         print(reply)
-        chat.add_message("assistant", reply)
+
 
 if __name__ == "__main__":
     main()

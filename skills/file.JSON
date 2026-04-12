@@ -1,10 +1,65 @@
-
-[
+[    
+    {
+        "command":"list dir",
+        "caption":"find out the contents of the folder",
+        "body":"ls \"./files/{path}\"",
+        "params":["path"],
+        "type":"shell"
+    },
+    {
+        "command":"read",
+        "caption":"use for reading files, after reading u need to answer this to user",
+        "body":"cat \"./files/{file_name}\"",
+        "params":["file_name"],
+        "type":"shell"
+    },
+    {   
+        "command":"delete",
+        "caption":"delete ONLY file",
+        "body":"rm -f \"./files/{relative_locations}\"",
+        "params":["relative_locations"],
+        "type":"shell"
+    },
     {
         "command":"create",
         "caption":"create file",
         "body":"echo \"{content}\" > \"./files/{relative_location}\"",
         "params":["relative_location","content"],
         "type":"shell"
+    },
+    {
+        "command":"add",
+        "caption":"add symbols in the end of the file",
+        "body":"echo \"{content}\" >> \"./files/{relative_location}\"",
+        "params":["relative_location","content"],
+        "type":"shell"
+    },
+        {
+        "command": "move",
+        "caption": "move or rename file/directory",
+        "body": "mv \"./files/{source}\" \"./files/{destination}\"",
+        "params": ["source", "destination"],
+        "type": "shell"
+    },
+    {
+        "command": "copy",
+        "caption": "copy file or directory",
+        "body": "cp -r \"./files/{source}\" \"./files/{destination}\"",
+        "params": ["source", "destination"],
+        "type": "shell"
+    },
+    {
+        "command": "made directory",
+        "caption": "use that for making dirs",
+        "body": "mkdir ./files/\"{dir_name}\"",
+        "params": ["dir_name"],
+        "type": "shell"
+    },
+    {
+        "command": "rmdir",
+        "caption": "remove empty directory",
+        "body": "rmdir \"./files/{relative_location}\"",
+        "params": ["relative_location"],
+        "type": "shell"
     }
 ]
