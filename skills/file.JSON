@@ -1,6 +1,6 @@
 [    
     {
-        "command":"list dir",
+        "command":"readdir",
         "caption":"find out the contents of the folder",
         "body":"ls \"./files/{path}\"",
         "params":["path"],

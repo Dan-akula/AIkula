@@ -11,22 +11,10 @@ END_TOKEN = os.getenv("END_TOKEN")
 SPLIT_TOKEN = os.getenv("SPLIT_TOKEN")
 SKILLS_DIR = os.getenv("SKILLS_DIR")
 
-
-# tools = [{
-#     "type": "function",
-#     "function": {
-#         "name": "test",
-#         "description": "Тестовая функция",
-#         "parameters": {"type": "object", "properties": {}}
-#     }
-# }]
-
-
 def generate_prompt():
     system_prompt = ('SYSTEM PROMPT\n\n'
                 'Role: Ты можешь взаимодействовать с пк юзера.'
                 'Пользователь имеет полные привелегия\n'
-
                 ' Для взаимодействия с системой ты можешь использовать используя скиллы в следуюйщим формат:'
                     f'{START_TOKEN}названия скилла{SPLIT_TOKEN}команда{SPLIT_TOKEN}params в формате json{END_TOKEN}\n'
                 'При возникновении ошибки сообщи пользователю честно\n'
@@ -67,6 +55,35 @@ class OllamaChat:
         return response['message']['content'].strip()
 
 
+
+
+def handle_prompt(chat, n=0):
+    reply = chat.get_response()
+
+    print(n, reply)
+
+
+    parser = extractor(reply)
+
+    chat.add_message("assistant", reply)
+
+    for com in parser:
+
+        res = executer(cmd_mapper(cmd_parser(com)))
+
+        if not (res.stderr or res.stdout):
+            continue    
+
+        command_res = res.stderr or res.stdout
+
+        chat.add_message("user", "stdout: " + command_res)
+        
+        reply = handle_prompt(chat, n+1)
+
+    return(reply)
+
+
+
 def main():
     chat = OllamaChat()
 
@@ -76,27 +93,7 @@ def main():
         chat.add_message("user", user_input)
         print("Агент: ", end="", flush=True)
 
-        reply = chat.get_response()
-
-        parser = extractor(reply)
-
-        chat.add_message("assistant", reply)
-
-        for com in parser:
-
-            res = executer(cmd_mapper(cmd_parser(com)))
-
-            if not (res.stderr or res.stdout):
-                continue    
-
-            if res.stderr:
-                chat.add_message("user", "stderr: " + res.stderr)
-            if res.stdout:
-                chat.add_message("user", "stdout: " + res.stdout)
-            
-            reply = chat.get_response()
-
-        print(reply)
+        print(handle_prompt(chat))
 
 
 if __name__ == "__main__":
